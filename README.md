@@ -1,2 +1,14 @@
 # Open-TFTP-Server
-MultiThreaded TFTP Server Open Source Freeware Windows/Unix for PXEBOOT, firmware load, support tsize, blksize, timeout Server Port Ranges, Block Number Rollover for Large Files. Runs as Service/daemon.
+MultiThreaded TFTP Server for Windows, runs as Service or console application.
+
+##
+Features
+
+* Supports nearly Every Industry Standard Feature
+* Total Size (tsize), Block Size, Interval Time, Block Number RollOver
+* Extensive Logging, Historical Logging
+* Can specify Server Interfaces and Ports
+* Client Port Ranges
+* Thread Pool
+* Windows Service
+* Very Small Foot Print
