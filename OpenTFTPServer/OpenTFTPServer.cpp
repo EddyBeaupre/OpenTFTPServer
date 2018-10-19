@@ -39,10 +39,9 @@
 char iniFile[_MAX_PATH];
 char logFile[_MAX_PATH];
 char lnkFile[_MAX_PATH];
-char tempbuff[256];
 
 unsigned short blksize = 65464;
-char verbatim = 0;
+bool verbatim = false;
 unsigned short timeout = 3;
 unsigned short loggingDay;
 data1 network;
@@ -58,7 +57,7 @@ unsigned short totalThreads = 0;
 unsigned short minThreads = 1;
 unsigned short activeThreads = 0;
 
-bool isRunning = true;
+bool isConsoleRunning = true;
 
 //Service Variables
 SERVICE_STATUS serviceStatus;
@@ -187,36 +186,31 @@ void WINAPI ServiceMain(DWORD /*argc*/, TCHAR* /*argv*/[]) {
 }
 
 BOOL WINAPI CtrlHandler(DWORD fdwCtrlType) {
-	if (isRunning) {
+	if (isConsoleRunning) {
 		switch (fdwCtrlType) {
 			// Handle the CTRL-C signal. 
 		case CTRL_C_EVENT:
 			logMess(1, "Caught CTRL-C Event. Shutting down");
-			isRunning = false;
+			isConsoleRunning = false;
 			return TRUE;
-
 			// CTRL-CLOSE: confirm that the user wants to exit. 
 		case CTRL_CLOSE_EVENT:
 			logMess(1, "Caught CLOSE Event. Shutting down");
-			isRunning = false;
+			isConsoleRunning = false;
 			return TRUE;
-
 			// Pass other signals to the next handler. 
 		case CTRL_BREAK_EVENT:
 			logMess(1, "Caught CTRL-BREAK Event. Shutting down");
-			isRunning = false;
+			isConsoleRunning = false;
 			return TRUE;
-
 		case CTRL_LOGOFF_EVENT:
 			logMess(1, "Caught LOGOFF Event. Shutting down");
-			isRunning = false;
+			isConsoleRunning = false;
 			return FALSE;
-
 		case CTRL_SHUTDOWN_EVENT:
 			logMess(1, "Caught SHUTDOWN Event. Shutting down");
-			isRunning = false;
+			isConsoleRunning = false;
 			return FALSE;
-
 		default:
 			return FALSE;
 		}
@@ -337,7 +331,7 @@ int main(int argc, TCHAR* argv[]) {
 			}
 
 			if (serviceStopped) {
-				runProg();
+				ConsoleMain();
 			} else {
 				logMess(1, "Failed to Stop Service");
 			}
@@ -345,7 +339,7 @@ int main(int argc, TCHAR* argv[]) {
 			runService();
 		}
 	} else if (argc == 1 || lstrcmpi(argv[1], TEXT("-v")) == 0) {
-		runProg();
+		ConsoleMain();
 	} else {
 		logMess(1, "This option is not available on Windows95/98/ME");
 	}
@@ -354,7 +348,7 @@ int main(int argc, TCHAR* argv[]) {
 	return 0;
 }
 
-void runProg() {
+void ConsoleMain() {
 	verbatim = true;
 
 	if (!SetConsoleCtrlHandler(CtrlHandler, TRUE)) {
@@ -413,7 +407,7 @@ void runProg() {
 				}
 			}
 		}
-	} while (isRunning);
+	} while (isConsoleRunning);
 	logMess(1, "Shutdown completed, cleaning up");
 	closeConn();
 	WSACleanup();
@@ -1524,7 +1518,6 @@ void init(void *lpParam) {
 		cfig.logLevel = 2;
 	} else if (f = openSection("LOGGING", 1, iniFile)) {
 		cfig.logLevel = 1;
-		tempbuff[0] = 0;
 
 		while (readSection(raw, f)) {
 			if (!_stricmp(raw, "None")) {
@@ -1533,9 +1526,10 @@ void init(void *lpParam) {
 				cfig.logLevel = 1;
 			} else if (!_stricmp(raw, "All")) {
 				cfig.logLevel = 2;
-			} else
+			} else {
 				cfig.logLevel = 1;
-			sprintf_s(tempbuff, sizeof(tempbuff), "Section [LOGGING], Invalid LogLevel: %s, defaulting to Error", raw);
+				logMess(1, "Section [LOGGING], Invalid LogLevel: %s, defaulting to Error", raw);
+			}
 		}
 	}
 
@@ -1554,11 +1548,6 @@ void init(void *lpParam) {
 			WritePrivateProfileString("InternetShortcut", "URL", logFileName, lnkFile);
 			WritePrivateProfileString("InternetShortcut", "IconIndex", "0", lnkFile);
 			WritePrivateProfileString("InternetShortcut", "IconFile", logFileName, lnkFile);
-
-			/* TOCHECK */
-			if (tempbuff[0]) {
-				logMess(0, tempbuff);
-			}
 		}
 	}
 
@@ -1588,9 +1577,7 @@ void init(void *lpParam) {
 							strcpy_s(cfig.homes[i].target, sizeof(cfig.homes[i].target), value);
 
 							if (cfig.homes[i].target[strlen(cfig.homes[i].target) - 1] != '\\') {
-								tempbuff[0] = '\\';
-								tempbuff[1] = 0;
-								strcat_s(cfig.homes[i].target, sizeof(cfig.homes[i].target), tempbuff);
+								strcat_s(cfig.homes[i].target, sizeof(cfig.homes[i].target), "\\");
 							}
 							break;
 						}
@@ -1716,17 +1703,15 @@ void init(void *lpParam) {
 		}
 	}
 
+	logMess(1, "");
 	if (verbatim) {
-		logMess(1, "");
 		logMess(1, "%s (Interactive mode)", SERVICE_DISPLAY_NAME);
-		logMess(1, "Version: %s, build date: %s", SERVICE_VERSION, SERVICE_BUILD);
-		logMess(1, "");
+
 	} else {
-		logMess(1, "");
 		logMess(1, "%s (Service mode)", SERVICE_DISPLAY_NAME);
-		logMess(1, "Version: %s, build date: %s", SERVICE_VERSION, SERVICE_BUILD);
-		logMess(1, "");
 	}
+	logMess(1, "Version: %s, build date: %s", SERVICE_VERSION, SERVICE_BUILD);
+	logMess(1, "");
 
 	logMess(1, "Configuration summary:");
 	for (int i = 0; i < MAX_SERVERS; i++) {

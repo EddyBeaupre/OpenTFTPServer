@@ -29,7 +29,7 @@
 constexpr auto MAX_SERVERS = 8;
 
 constexpr auto SERVICE_NAME = "OpenTFTPServer";
-constexpr auto SERVICE_DISPLAY_NAME = "Open TFTP Server, MultiThreaded";
+constexpr auto SERVICE_DISPLAY_NAME = "Open TFTP Server";
 constexpr auto SERVICE_VERSION = "2.0.0";
 constexpr auto SERVICE_BUILD = __TIMESTAMP__;
 
@@ -168,7 +168,7 @@ struct data15
 bool detectChange();
 void closeConn();
 void getInterfaces(data1*);
-void runProg();
+void ConsoleMain();
 void processRequest(LPVOID);
 char* myGetToken(char*, unsigned char);
 char* myTrim(char*, char*);
