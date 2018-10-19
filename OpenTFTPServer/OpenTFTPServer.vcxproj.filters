@@ -40,10 +40,12 @@
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="OpenTFTPServer.ini" />
+    <CopyFileToFolders Include="RunStandAlone.bat">
+      <Filter>Fichiers sources</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
-    <None Include="RunStandAlone.bat">
-      <Filter>Fichiers sources</Filter>
-    </None>
+    <None Include="..\LICENSE" />
+    <None Include="..\README.md" />
   </ItemGroup>
 </Project>
