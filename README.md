@@ -12,3 +12,5 @@ Features
 * Thread Pool
 * Windows Service
 * Very Small Foot Print
+
+This project is a fork of [achaldhir's Open TFTP Server](https://sourceforge.net/projects/tftp-server/)
