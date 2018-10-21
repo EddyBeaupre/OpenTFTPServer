@@ -1,4 +1,4 @@
-# Open-TFTP-Server
+# OpenTFTPServer
 MultiThreaded TFTP Server for Windows, runs as Service or console application.
 
 ##
